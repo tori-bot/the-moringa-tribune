@@ -27,8 +27,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 MODE=config("MODE", default="dev")
 SECRET_KEY=config('SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
+ALLOWED_HOSTS='.localhost', '.herokuapp.com', '.127.0.0.1'
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False 
+
 
 ALLOWED_HOSTS = []
 
@@ -89,6 +90,8 @@ DATABASES = {
         'NAME':config('DB_NAME'),
         'USER': config('DB_USER'),
     'PASSWORD':config('DB_PASSWORD'),
+    'HOST': config('DB_HOST'),
+           'PORT': '',
     }
 }
 
