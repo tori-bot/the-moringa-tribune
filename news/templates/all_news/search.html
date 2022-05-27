@@ -8,10 +8,12 @@
         <h2> Found 0 articles for the search term {{message}}</h2>
         {% endif %}
     </div>
-    <div class="row">
+    
         {% if articles %}
         {% for item in articles %}
-        <div class="col-sm-6 col-md-6">
+        <div class="row">
+            <img src="{{item.article_image.url}}" class="img-responsive" alt="Image">
+           
             <h1>{{item.title}}</h1>
             <h3>{{item.editor}} | {{item.pub_date}} </h3>
             <h5>{{item.tags}} </h5>

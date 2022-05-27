@@ -11,13 +11,14 @@
 <div class="container">
     {% for item in news %}
     <div class="row">
-        <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+        
+            <img src="{{item.article_image.url}}" class="img-responsive" alt="Image">
             <h2 class="text-center"> {{ item.title }} </h2>
             <h3>{{item.editor}} | {{item.pub_date}} </h3>
             <h5>{{item.tags}} </h5>
             <br>
             <p>{{item.post}} </p>
-          </div>
+          
     </div>
     {% empty %}
     <div class="row">
