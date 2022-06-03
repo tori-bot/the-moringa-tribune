@@ -1,5 +1,5 @@
 from django.test import TestCase
-from .models import Editor,Article,tags
+from .models import Editor,Article,Tags
 import datetime as dt
 # Create your tests here.
 class EditorTestCase(TestCase):
@@ -23,7 +23,7 @@ class ArticleTestClass(TestCase):
         self.james.save_editor()
 
         # Creating a new tag and saving it
-        self.new_tag = tags(name = 'testing')
+        self.new_tag = Tags(name = 'testing')
         self.new_tag.save()
 
         self.new_article= Article(title = 'Test Article',post = 'This is a random test Post',editor = self.james)
@@ -33,7 +33,7 @@ class ArticleTestClass(TestCase):
 
     def tearDown(self):
         Editor.objects.all().delete()
-        tags.objects.all().delete()
+        Tags.objects.all().delete()
         Article.objects.all().delete()
 
     def test_get_news_today(self):

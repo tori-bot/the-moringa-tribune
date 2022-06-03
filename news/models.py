@@ -1,47 +1,22 @@
 from django.db import models
 import datetime as dt
+from django.contrib.auth.models import User
 
-# Create your models here.
-class Editor(models.Model):
-    first_name = models.CharField(max_length =30)
-    last_name = models.CharField(max_length =30)
-    email = models.EmailField()
-    phone_number = models.CharField(max_length = 10,blank =True)
 
-    def save_editor(self):
-        self.save()
 
-    def delete_editor(self):
-        self.delete()
-
-    @classmethod
-    def display_editors(cls,self):
-        first_name=self.first_name
-        last_name=self.last_name
-        email=self.email
-        return first_name,last_name,email
-
-    @classmethod
-    def update_editor(cls,self):
-        first_name=self.append.first_name
-        last_name=self.append.last_name
-        email=self.append.email
-        return first_name,last_name,email   
-
-    def __str__(self):
-        return self.first_name
-
-class tags(models.Model):
+class Tags(models.Model):
     name=models.CharField(max_length =30)
 
     def __str__(self):
         return self.name
 
+
 class Article(models.Model):
     title=models.CharField(max_length =60)
     post= models.TextField()
-    editor=models.ForeignKey(Editor,on_delete=models.CASCADE)
-    tags=models.ManyToManyField(tags)
+    # the tinymce editor saves the input as raw html to the database.
+    editor=models.ForeignKey(User,on_delete=models.CASCADE)
+    tags=models.ManyToManyField(Tags)
     
     pub_date=models.DateTimeField(auto_now_add=True)
     article_image=models.ImageField(upload_to='articles/',null=True)
@@ -67,3 +42,7 @@ class Article(models.Model):
 
     def __str__(self):
         return self.title
+
+class NewsLetterRecipients(models.Model):
+    name=models.CharField(max_length=30)
+    email=models.EmailField()
