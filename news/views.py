@@ -1,10 +1,17 @@
-from .forms import NewsLetterForm
+from .forms import NewsArticleForm, NewsLetterForm
 from django.shortcuts import render,redirect
 from django.http import HttpResponse,Http404,HttpResponseRedirect
 from .models  import Article, NewsLetterRecipients
 import datetime as dt
 from .email import send_welcome_email
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from .models import  MoringaMerch
+from .serializer import MerchSerializer
+from rest_framework import status
+from .permissions import IsAdminOrReadOnly
 
 # Create your views here.
 def welcome(request):
@@ -18,23 +25,8 @@ def news_today(request):
     news=Article.todays_news()
 
 #submit data to db
-    if request.method=='POST':
-        #check if request made is a post request
-        form=NewsLetterForm(request.POST)
-        if form.is_valid():
-            # values of the form are saved inside cleaned_data property which is a dictionary.
-            name=form.cleaned_data['your_name']
-            email=form.cleaned_data['email']
-            #retrieve the name and email values from the form and create a NewsLetterRecipients object
-            recipient=NewsLetterRecipients(name=name,email=email)
-            recipient.save()
-            send_welcome_email(name,email)
-            HttpResponseRedirect('news_today')
-    else:
-        form=NewsLetterForm()
-        
-
-    return render(request, 'all_news/today_news.html',{'date':date,'news':news,'letterForm':form} )
+    form = NewsLetterForm()
+    return render(request, 'all_news/today_news.html', {"date": date, "news": news, "letterForm": form})
 
 def convert_dates(dates):
     # function gets weekday number for the date.
@@ -101,3 +93,61 @@ def new_article(request):
     else:
         form = NewsArticleForm()
     return render(request, 'new_article.html', {"form": form})
+
+def newsletter(request):
+    #get the name and email from our AJAX request, save the user in the database and sends the welcome email
+    name = request.POST.get('your_name')
+    email = request.POST.get('email')
+
+    recipient = NewsLetterRecipients(name=name, email=email)
+    recipient.save()
+    send_welcome_email(name, email)
+    data = {'success': 'You have been successfully added to mailing list'}
+    return JsonResponse(data)
+    # returns a JSON response to tell us the action has been completed successfully
+
+class MerchList(APIView):
+    # import the APIView as a base class for our API view function.
+    def get(self, request, format=None):
+        all_merch = MoringaMerch.objects.all()
+        serializers = MerchSerializer(all_merch, many=True)
+        return Response(serializers.data)
+
+    def post(self, request, format=None):
+        # Since the post method will be triggered when we are getting form data, we will serialize the data in the request
+        serializers = MerchSerializer(data=request.data)
+        if serializers.is_valid():
+            serializers.save()
+            return Response(serializers.data, status=status.HTTP_201_CREATED)
+        return Response(serializers.errors, status=status.HTTP_400_BAD_REQUEST)
+        # status module will handle all the status code responses
+
+    permission_classes = (IsAdminOrReadOnly,)
+
+class MerchDescription(APIView):
+    permission_classes = (IsAdminOrReadOnly,)
+    def get_merch(self, pk):
+        try:
+            return MoringaMerch.objects.get(pk=pk)
+        except MoringaMerch.DoesNotExist:
+            return Http404
+
+    def get(self, request, pk, format=None):
+        merch = self.get_merch(pk)
+        serializers = MerchSerializer(merch)
+        return Response(serializers.data)
+
+    def put(self, request, pk, format=None):
+        # updating an object
+        merch = self.get_merch(pk)
+        serializers = MerchSerializer(merch, request.data)
+        if serializers.is_valid():
+            serializers.save()
+            return Response(serializers.data)
+        else:
+            return Response(serializers.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk, format=None):
+        merch = self.get_merch(pk)
+        merch.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
